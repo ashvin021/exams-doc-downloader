@@ -250,6 +250,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "exams-doc-downloader"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "dotenv",
+ "futures",
+ "futures-util",
+ "indicatif",
+ "nipper",
+ "reqwest",
+ "tokio",
+]
+
+[[package]]
 name = "fastrand"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -542,20 +556,6 @@ dependencies = [
  "native-tls",
  "tokio",
  "tokio-native-tls",
-]
-
-[[package]]
-name = "icl-paper-downloader"
-version = "0.1.0"
-dependencies = [
- "clap",
- "dotenv",
- "futures",
- "futures-util",
- "indicatif",
- "nipper",
- "reqwest",
- "tokio",
 ]
 
 [[package]]

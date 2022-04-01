@@ -1,5 +1,5 @@
 [package]
-name = "icl-paper-downloader"
+name = "exams-doc-downloader"
 version = "0.1.0"
 edition = "2021"
 
