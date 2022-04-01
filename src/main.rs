@@ -17,6 +17,8 @@ struct Args {
     dest: PathBuf,
 
     #[clap(long, parse(try_from_str=parse_year_opt))]
+    /// All papers from this year to present. 
+    /// Defaults to 2017.
     papers_from: Option<usize>,
 }
 
