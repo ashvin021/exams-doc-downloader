@@ -16,10 +16,20 @@ struct Args {
     #[clap(parse(from_os_str))]
     dest: PathBuf,
 
-    #[clap(long, parse(try_from_str=parse_year_opt))]
-    /// All papers from this year to present. 
+    /// All papers from given year to present. 
     /// Defaults to 2017.
+    #[clap(long, parse(try_from_str=parse_year_opt))]
     papers_from: Option<usize>,
+
+    /// Year group to download pastpapers for.
+    #[clap(short, long, arg_enum)]
+    year_group: YearGroup
+}
+
+#[derive(Debug, Clone, Copy, clap::ArgEnum)]
+enum YearGroup {
+    Y1,
+    Y2
 }
 
 #[tokio::main]
@@ -35,6 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let start = args.papers_from.unwrap_or(DEFAULT_START);
     let years = start..ALL_YEARS.end;
+    let year_group = args.year_group;
 
     // Indicatif setup
     let spinner_style = ProgressStyle::default_spinner()
@@ -59,7 +70,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let task = tokio::spawn(async move {
             let url = year_to_url(year);
-            let prefix = year_to_prefix(year);
+            let prefix = year_to_prefix(year, year_group);
             let resp = client
                 .get(&url)
                 .basic_auth(&uname, Some(&pword))
@@ -172,10 +183,16 @@ fn year_to_string(year: usize) -> String {
     format!("{prev:0>2}-{year:0>2}")
 }
 
-fn year_to_prefix(year: usize) -> &'static str {
+fn year_to_prefix(year: usize, year_group: YearGroup) -> &'static str {
+
+    let (old, new) = match year_group {
+        YearGroup::Y1 => ("C1", "COMP4"),
+        YearGroup::Y2 => ("C2", "COMP5")
+    };
+
     match year {
-        2000..=2020 => "C2",
-        _ => "COMP5",
+        2000..=2020 => old,
+        _ => new,
     }
 }
 
