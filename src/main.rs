@@ -16,20 +16,20 @@ struct Args {
     #[clap(parse(from_os_str))]
     dest: PathBuf,
 
-    /// All papers from given year to present. 
+    /// All papers from given year to present.
     /// Defaults to 2017.
     #[clap(long, parse(try_from_str=parse_year_opt))]
     papers_from: Option<usize>,
 
     /// Year group to download pastpapers for.
     #[clap(short, long, arg_enum)]
-    year_group: YearGroup
+    year_group: YearGroup,
 }
 
 #[derive(Debug, Clone, Copy, clap::ArgEnum)]
 enum YearGroup {
     Y1,
-    Y2
+    Y2,
 }
 
 #[tokio::main]
@@ -76,10 +76,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .basic_auth(&uname, Some(&pword))
                 .send()
                 .await
-                .map_err(|e| format!("{e}"))?
+                .map_err(|e| format!("{}", e))?
                 .text()
                 .await
-                .map_err(|e| format!("{e}"))?;
+                .map_err(|e| format!("{}", e))?;
 
             let urls = Document::from(&resp)
                 .select("p")
@@ -156,7 +156,7 @@ pub async fn download_and_save(
 
     // Download chunks
     pb.set_length(total_size);
-    pb.set_message(&format!("downloading...: {fname}"));
+    pb.set_message(&format!("downloading...: {}", fname));
     let mut downloaded = 0;
     let mut stream = resp.bytes_stream();
 
@@ -174,20 +174,19 @@ pub async fn download_and_save(
 
 fn year_to_url(year: usize) -> String {
     let year_str = year_to_string(year);
-    format!("https://exams.doc.ic.ac.uk/pastpapers/papers.{year_str}/")
+    format!("https://exams.doc.ic.ac.uk/pastpapers/papers.{}/", year_str)
 }
 
 fn year_to_string(year: usize) -> String {
     let year = year % 100;
     let prev = if year == 0 { 99 } else { year - 1 };
-    format!("{prev:0>2}-{year:0>2}")
+    format!("{:0>2}-{:0>2}", prev, year)
 }
 
 fn year_to_prefix(year: usize, year_group: YearGroup) -> &'static str {
-
     let (old, new) = match year_group {
         YearGroup::Y1 => ("C1", "COMP4"),
-        YearGroup::Y2 => ("C2", "COMP5")
+        YearGroup::Y2 => ("C2", "COMP5"),
     };
 
     match year {
@@ -199,13 +198,13 @@ fn year_to_prefix(year: usize, year_group: YearGroup) -> &'static str {
 fn parse_year_opt(s: &str) -> Result<usize, String> {
     let year: usize = s
         .parse()
-        .map_err(|_| format!("`{s}` isn't a calendar year"))?;
+        .map_err(|_| format!("`{}` isn't a calendar year", s))?;
     if ALL_YEARS.contains(&year) {
         Ok(year)
     } else {
         Err(format!(
-            "DoC papers are not available for {}. Available years are from {} to {}.",
-            year, ALL_YEARS.start, ALL_YEARS.end
+            "DoC papers are not available for {this_year}. Available years are from {start} to {end}.",
+            this_year=year, start=ALL_YEARS.start, end=ALL_YEARS.end
         ))
     }
 }
